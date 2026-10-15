@@ -214,15 +214,22 @@ function toast(txt) {
   toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
 }
 
+/** Rueckfrage vor dem Loeschen. */
+function bestaetigt(frage) {
+  return window.confirm(frage);
+}
+
 // ----------------------------------------------------------------- Dialog --
-function dialog({ titel, hint, inhalt, ok = 'Speichern', abbrechen = 'Abbrechen', beimOeffnen, beiOk }) {
+function dialog({ titel, hint, inhalt, ok = 'Speichern', abbrechen = 'Abbrechen',
+                  extra, beimOeffnen, beiOk }) {
   const hg = $('#dialog-hg'), d = $('#dialog');
   d.innerHTML = `<h3>${titel}</h3>${hint ? `<p class="dlg-hint">${hint}</p>` : ''}
     <div id="dlg-inhalt">${inhalt}</div>
     <div class="dlg-knoepfe">
       <button id="dlg-ab" class="flach">${abbrechen}</button>
       <button id="dlg-ok" class="primaer">${ok}</button>
-    </div>`;
+    </div>
+    ${extra ? `<button id="dlg-extra" class="flach gefahr">${extra.label}</button>` : ''}`;
   hg.hidden = false; d.hidden = false;
   const zu = () => { hg.hidden = true; d.hidden = true; };
   $('#dlg-ab').onclick = zu;
@@ -231,6 +238,12 @@ function dialog({ titel, hint, inhalt, ok = 'Speichern', abbrechen = 'Abbrechen'
     const r = beiOk ? await beiOk(d) : true;
     if (r !== false) zu();
   };
+  if (extra) {
+    $('#dlg-extra').onclick = async () => {
+      const r = await extra.tun(d);
+      if (r !== false) zu();
+    };
+  }
   if (beimOeffnen) beimOeffnen(d);
 }
 
@@ -361,21 +374,21 @@ function abschlussDialog() {
       <label class="feld">Orte, Reihenfolge wie erfasst</label>
       ${einzig.length ? chips('ab-orte', einzig, einzig, true)
         : '<p class="dlg-hint" style="margin:0">Keine Orte erfasst. Trag sie unten direkt in den Text ein.</p>'}
-      <label class="feld">Zweck</label>
-      ${chips('ab-zweck', ZWECKE, t.zweck ? [t.zweck] : [])}
+      <label class="feld">Zweck <span class="hint">mehrere möglich</span></label>
+      ${chips('ab-zweck', ZWECKE, t.zwecke || (t.zweck ? [t.zweck] : []), true)}
       <label class="feld">Text für die Excel</label>
       <textarea id="ab-text">${t.text || ''}</textarea>`,
     beimOeffnen: (d) => {
       chipsBinden(d);
       const bauen = () => {
         const o = chipsWerte('ab-orte');
-        const z = chipsWert('ab-zweck');
+        const z = chipsWerte('ab-zweck');
         const typ = chipsWert('ab-typ');
         let s;
         if (typ === 'urlaub') s = 'Urlaub';
         else if (typ === 'feiertag') s = 'Feiertag';
-        else if (typ === 'homeoffice' && !o.length) s = 'Homeoffice';
-        else s = o.join(', ') + (z ? ` (${z})` : '');
+        else if (!o.length) s = z.length ? z.join(', ') : (typ === 'homeoffice' ? 'Homeoffice' : '');
+        else s = o.join(', ') + (z.length ? ` (${z.join(', ')})` : '');
         $('#ab-text').value = s;
       };
       if (!t.text) bauen();
@@ -383,7 +396,8 @@ function abschlussDialog() {
     },
     beiOk: async () => {
       t.typ = chipsWert('ab-typ') || 'reise';
-      t.zweck = chipsWert('ab-zweck');
+      t.zwecke = chipsWerte('ab-zweck');
+      delete t.zweck;
       t.text = $('#ab-text').value.trim();
       if (t.laeuft) { t.segmente.push({ start: t.laeuft, ende: Date.now() }); t.laeuft = null; }
       t.abgeschlossen = true;
@@ -413,6 +427,17 @@ function tagBearbeiten(datum) {
       <label class="feld">Nächtigung auswärts</label>
       ${chips('be-nacht', [{ id: 'ja', label: 'Ja' }, { id: 'nein', label: 'Nein' }], [t.naechtigung ? 'ja' : 'nein'])}`,
     beimOeffnen: (el) => chipsBinden(el),
+    extra: {
+      label: 'Diesen Tag komplett leeren',
+      tun: async () => {
+        if (!bestaetigt(`${d.getDate()}.${d.getMonth() + 1}. wirklich leeren?`)) return false;
+        await DB.weg('tage', datum);
+        if (datum === heuteIso()) S.tag = leererTag(datum);
+        await monatLaden(S.monat);
+        zeichneAlles();
+        toast('Tag geleert');
+      },
+    },
     beiOk: async () => {
       const ab = zeitPruefen($('#be-ab').value);
       const an = zeitPruefen($('#be-an').value);
@@ -484,9 +509,12 @@ async function belegSpeichern() {
 }
 
 async function belegLoeschen(id) {
+  const b = S.belege.find((x) => x.id === id);
+  if (!bestaetigt(`Beleg "${b?.text || 'ohne Beschreibung'}" löschen?`)) return;
   await DB.weg('belege', id);
-  S.belege = S.belege.filter((b) => b.id !== id);
+  S.belege = S.belege.filter((x) => x.id !== id);
   zeichneBelege();
+  toast('Beleg gelöscht');
 }
 
 // ------------------------------------------------------------------ Export --
@@ -726,6 +754,7 @@ function verdrahten() {
   };
   $('#btn-grenze').onclick = grenzDialog;
   $('#btn-abschluss').onclick = abschlussDialog;
+  $('#btn-korrigieren').onclick = () => tagBearbeiten(S.tag.datum);
 
   $('#monat-zurueck').onclick = () => monatWechseln(-1);
   $('#monat-vor').onclick = () => monatWechseln(1);

@@ -1,7 +1,7 @@
 /* Service Worker: App-Huelle offline halten.
    Version bei jeder Aenderung hochzaehlen, sonst behaelt das iPhone die alte. */
 
-const VERSION = 'abrechnung-v2';
+const VERSION = 'abrechnung-v3';
 const HUELLE = [
   './', './index.html', './style.css', './app.js',
   './manifest.webmanifest', './icon-192.png', './icon-512.png',
