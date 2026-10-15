@@ -1,7 +1,7 @@
 {
-  "name": "Abrechnung Garant",
+  "name": "Abrechnung",
   "short_name": "Abrechnung",
-  "description": "Reisezeit, Arbeitszeit und Belege erfassen, Monatsexport für die Garant-Reiserechnung.",
+  "description": "Reisezeit, Arbeitszeit und Belege erfassen, mit Monatsexport.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

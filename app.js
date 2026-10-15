@@ -1,6 +1,6 @@
-/* Abrechnung – Reisezeit, Arbeitszeit und Belege fuer die Garant-Abrechnung.
+/* Abrechnung – Reisezeit, Arbeitszeit und Belege erfassen.
    Laeuft offline, Daten bleiben im Geraet (IndexedDB). Export als JSON,
-   das tools/build_abrechnung.py in die Garant-Vorlagen einsetzt.          */
+   das ein Skript am Rechner in die Excel-Vorlagen einsetzt.              */
 
 'use strict';
 
