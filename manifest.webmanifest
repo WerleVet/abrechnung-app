@@ -1,0 +1,17 @@
+{
+  "name": "Abrechnung Garant",
+  "short_name": "Abrechnung",
+  "description": "Reisezeit, Arbeitszeit und Belege erfassen, Monatsexport für die Garant-Reiserechnung.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f4f6",
+  "theme_color": "#14213d",
+  "lang": "de-AT",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

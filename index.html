@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14213d">
+<title>Abrechnung</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header id="kopf">
+  <div class="kopf-zeile">
+    <strong id="kopf-datum">Heute</strong>
+    <span id="kopf-status" class="pill">zuhause</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ------------------------------------------------ HEUTE ------------ -->
+<section id="tab-heute" class="tab aktiv">
+
+  <div class="karte" id="karte-reise">
+    <div class="karte-kopf">
+      <h2>Reisezeit</h2>
+      <span class="hint">zählt fürs Taggeld</span>
+    </div>
+    <div class="zeitanzeige">
+      <div><span class="label">Haus verlassen</span><b id="an-abfahrt">–</b></div>
+      <div><span class="label">Heim gekommen</span><b id="an-ankunft">–</b></div>
+    </div>
+    <button id="btn-los" class="gross primaer">Haus verlassen</button>
+    <button id="btn-heim" class="gross primaer" hidden>Heim gekommen</button>
+    <p class="fuss" id="reise-fuss"></p>
+  </div>
+
+  <div class="karte" id="karte-arbeit">
+    <div class="karte-kopf">
+      <h2>Arbeitszeit</h2>
+      <span class="hint">Spalte AI</span>
+    </div>
+    <div class="zeitanzeige">
+      <div><span class="label">heute erfasst</span><b id="an-arbeit">0:00</b></div>
+      <div><span class="label">läuft seit</span><b id="an-arbeit-seit">–</b></div>
+    </div>
+    <button id="btn-arbeit" class="gross">Arbeit starten</button>
+  </div>
+
+  <div class="karte">
+    <div class="karte-kopf"><h2>Wo war ich?</h2><span class="hint" id="orte-zahl"></span></div>
+    <ul id="orte-liste" class="liste leer-hinweis" data-leer="Noch kein Ort erfasst."></ul>
+    <div class="chips" id="orte-schnell"></div>
+    <button id="btn-ort" class="gross">Ort hinzufügen</button>
+  </div>
+
+  <div class="karte">
+    <div class="karte-kopf"><h2>Extras</h2></div>
+    <div class="zeile">
+      <span>Arbeitsessen</span>
+      <div class="stepper">
+        <button data-essen="-1">−</button><b id="an-essen">0</b><button data-essen="1">+</button>
+      </div>
+    </div>
+    <div class="zeile">
+      <span>Nächtigung auswärts</span>
+      <label class="schalter"><input type="checkbox" id="chk-nacht"><span></span></label>
+    </div>
+    <div class="zeile">
+      <span>Grenzübertritt</span>
+      <button id="btn-grenze" class="flach klein">erfassen</button>
+    </div>
+    <p class="fuss" id="grenze-fuss"></p>
+  </div>
+
+  <button id="btn-abschluss" class="gross erfolg">Tag abschließen</button>
+  <p class="fuss mitte" id="abschluss-fuss"></p>
+
+</section>
+
+<!-- ------------------------------------------------ MONAT ------------ -->
+<section id="tab-monat" class="tab">
+  <div class="karte">
+    <div class="karte-kopf">
+      <h2 id="monat-titel">Monat</h2>
+      <div class="monat-nav">
+        <button id="monat-zurueck" class="flach klein">‹</button>
+        <button id="monat-vor" class="flach klein">›</button>
+      </div>
+    </div>
+    <div class="zeile">
+      <span>KM-Stand am 1.</span>
+      <input type="number" inputmode="numeric" id="km-start" placeholder="z.B. 132128">
+    </div>
+    <div class="zeile">
+      <span>KM-Stand am Letzten</span>
+      <input type="number" inputmode="numeric" id="km-ende" placeholder="z.B. 136837">
+    </div>
+    <div id="km-summe" class="fuss"></div>
+  </div>
+
+  <div class="karte" id="karte-vorschau">
+    <div class="karte-kopf"><h2>Vorschau</h2><span class="hint">wie Excel rechnet</span></div>
+    <table class="vorschau"><tbody id="vorschau-body"></tbody></table>
+  </div>
+
+  <div class="karte">
+    <div class="karte-kopf"><h2>Tage</h2></div>
+    <ul id="monat-liste" class="liste tage"></ul>
+  </div>
+
+  <button id="btn-export" class="gross primaer">Monat exportieren</button>
+  <button id="btn-backup" class="flach">Komplett-Backup aller Monate</button>
+  <p class="fuss mitte">Die Datei im Repo mit <code>tools/build_abrechnung.py</code> verarbeiten.</p>
+</section>
+
+<!-- ------------------------------------------------ BELEGE ----------- -->
+<section id="tab-belege" class="tab">
+  <div class="karte">
+    <div class="karte-kopf"><h2>Neuer Beleg</h2></div>
+    <label class="foto-feld" id="foto-feld">
+      <input type="file" accept="image/*" capture="environment" id="foto-input" class="weg-vom-schirm">
+      <img id="foto-vorschau" hidden alt="">
+      <span id="foto-text">Beleg fotografieren</span>
+    </label>
+    <input type="text" id="beleg-text" placeholder="Beschreibung, z.B. BP Tankstelle">
+    <input type="number" inputmode="decimal" step="0.01" id="beleg-betrag" placeholder="Betrag in Euro">
+    <button id="btn-beleg-speichern" class="gross primaer">Beleg speichern</button>
+  </div>
+
+  <div class="karte">
+    <div class="karte-kopf"><h2>Belege im Monat</h2><span class="hint" id="beleg-summe"></span></div>
+    <ul id="beleg-liste" class="liste leer-hinweis" data-leer="Noch keine Belege."></ul>
+  </div>
+</section>
+
+</main>
+
+<nav id="tabs">
+  <button data-tab="heute" class="aktiv"><span>●</span>Heute</button>
+  <button data-tab="monat"><span>▦</span>Monat</button>
+  <button data-tab="belege"><span>▣</span>Belege</button>
+</nav>
+
+<div id="dialog-hg" hidden></div>
+<div id="dialog" hidden></div>
+<div id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
